@@ -33,3 +33,9 @@
 
 # documentation
 doc/
+
+# temp files
+*.swp
+
+# binary
+2DSOR
