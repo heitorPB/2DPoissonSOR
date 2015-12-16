@@ -36,6 +36,8 @@ doc/html
 
 # temp files
 *.swp
+*.aux
+doc/*.doc*
 
 # binary
 2DSOR
