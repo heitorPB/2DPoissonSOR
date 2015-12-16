@@ -32,7 +32,7 @@
 *.dSYM/
 
 # documentation
-doc/
+doc/html
 
 # temp files
 *.swp
