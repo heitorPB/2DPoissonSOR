@@ -8,22 +8,25 @@
 
 #include <stdio.h>
 #include "PoissonSOR2D.h"
+#include <stdlib.h>
 
 
-double g(double x, double y, int N)
+double g(int x, int y, int N)
 {
-	return x+y+42;
+	if ((x - N/2. < 0.1) && (y - N/2. < 0.1))
+		return 1.;
+	return 0;
 }
 
 
 int main(int argc, char *argv[])
 {
 	char c;
-	double (*func)(double, double, int) = &g;
+	double (*func)(int, int, int) = &g;
 	int i;
 	int N = 128;
 	int tmax = 1000;
-	double prec = 0.01;
+	double prec = 0.1e-5;
 	double gamma;
 	double *f = NULL;
 	double *b = NULL;
@@ -36,9 +39,15 @@ int main(int argc, char *argv[])
 	printf("\tprecision: %f\n", prec);
 	printf("\tgamma: %f\n", gamma);
 
-	i = PoissonSOR2D(f, func, b, gamma, N, tmax, prec);
+	if (!(f = calloc(N*N, sizeof(double)))) {
+		perror("Memory allocation problem: ");
+		return 1;
+	}
+
+	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
 
 	printf("%d\n", i);
 
+	free(f);
 	return 0;
 }

@@ -25,21 +25,15 @@
  *
  * The point (0, 0) is at the lower left.
  *
- * The boundary is specified as a linear vector b, indexed the following way:
- * * first N-1 elements correspond to (x, y = 0)
- * * elements b[N:2N - 1] correspond to (x = N - 1, y)
- * * elements b[2N:3N - 1] correspond to (x, y = N - 1)
- * * elements b[3N:4N - 1] correspond to (x = 0, y)
- *
- * In a counter clockwise fashion.
+ * The boundary condition is specified in the vector f as the exterior points.
  *
  * @return
  * * 0 on success
  * * -1 on memory error
+ * * 1 on f not allocated
  */
 int PoissonSOR2D(double *f, /**< [in, out] numerical result */
-                 double (*g)(double, double, int), /**< [in] RHS of Poisson Eq */
-		 double *b, /**< [in] boundary values */
+                 double (*g)(int, int, int), /**< [in] RHS of Poisson Eq */
                  double gamma, /**< [in] SOR parameter */
                  int N, /**< [in] number of grid points in each dimension */
                  int tmax, /** [in] maximum number of iterations */
@@ -59,4 +53,10 @@ static inline double SORParamSin(int N /**< [in] grid size along one dimension *
 	return (2. / (1. + sin(M_PI / (N + 1.)))) ;
 }
 
+
+/* SOR Itself. Not to be called by user.
+ *
+ */
+void update(double *f, double *f_old, double (*g)(int, int, int),
+            double *norm, double gamma, int N);
 #endif
