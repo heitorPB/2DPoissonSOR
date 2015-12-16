@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "PoissonSOR2D.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 
 double g(int x, int y, int N)
@@ -32,6 +33,42 @@ int main(int argc, char *argv[])
 	double *b = NULL;
 
 	gamma = SORParamSin(N);
+
+	/* Parse command line*/
+	while ((c = getopt(argc, argv, "N:t:p:g:h")) >= 0) {
+		switch (c) {
+		case 'N':
+			N = (unsigned int) atoi(optarg);
+			break;
+
+		case 't':
+			tmax = (unsigned int) atoi(optarg);
+			break;
+
+		case 'p':
+			prec = atof(optarg);
+			break;
+
+		case 'g':
+			gamma = atof(optarg);
+			if ((gamma < 0) || (gamma > 2))
+				fprintf(stdout, "Weird value of SOR parameter."
+				        "Be carefull.\n%s\n", optarg);
+			break;
+
+		case '?':
+		case 'h':
+			fprintf(stderr, "Usage: %s [option]...\n"
+				"Options:\n"
+				"\t-N\tgrid size in each dimension\n"
+				"\t-t\tmax number of iterations\n"
+				"\t-p\tdesired precision\n"
+				"\t-g\tdesired precision\n"
+				"\t-h\tthis text\n",
+				argv[0]);
+			return 0;
+		}
+	}
 
 	printf("Simulation parameters:\n");
 	printf("\tgrid size: %d x %d\n", N, N);
