@@ -7,7 +7,7 @@
  */
 
 #include "PoissonSOR2D.h"
-
+#include <math.h>
 
 int PoissonSOR2D(double *f, double (*g)(double, double, int), double *b,
                  double gamma, int N, int tmax, double prec)

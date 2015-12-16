@@ -33,5 +33,4 @@ $(BIN): $(OBJ)
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 clean:
-	rm $(BIN)
-	rm a.out *.o *~
+	rm $(BIN) $(OBJ)

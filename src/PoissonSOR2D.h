@@ -7,6 +7,10 @@
  *
  */
 
+#ifndef POISSONSOR2D_H_INCLUDED
+#define POISSONSOR2D_H_INCLUDED
+
+#include <math.h>
 
 /** @brief Solver of Poisson Equation.
  *
@@ -35,3 +39,17 @@ int PoissonSOR2D(double *f, /**< [in, out] numerical result */
                  int N, /**< [in] number of grid points in each dimension */
                  int tmax, /** [in] maximum number of iterations */
                  double prec /** [in] desired precision */);
+
+
+/** @brief Get optimal parameter for SOR.
+ *
+ * According to @cite Yang2009325, the optimal SOR parameter is
+ * @f[ \omega_{opt} = \frac{2}{1 + \sin(\pi h)} @f]
+ * with @f[ h = \frac{1}{N + 1} @f]
+ */
+static inline double SORParamSin(int N)
+{
+	return (2. / (1. + sin(M_PI / (N + 1.)))) ;
+}
+
+#endif
