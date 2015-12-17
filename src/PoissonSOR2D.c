@@ -59,21 +59,21 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 			                        f_old[i+1 +  j    * N] +
 			                        f_old[i   + (j-1) * N] +
 			                        f_old[i   + (j+1) * N] -
-			                        4. * f_old[i  + j * N] -
-			                        g(i, j, N)/(N*N)) / 4.;
+			                        4. * f_old[i  + j * N] +
+			                        g(i, j, N)) / 4.;
 		}
 	}
 
 	/* for all red grid points in the interior of the grid */
 	for (j = 1; j < N - 1; j++) { /* y loop */
-		for (i = 1; i < N - 1; i += 2) { /* x loop */
+		for (i = 2; i < N - 1; i += 2) { /* x loop */
 			f[i + j * N] = f_old[i + j * N] +
 			               gamma * (f[i-1 +  j    * N] +
 			                        f[i+1 +  j    * N] +
 			                        f[i   + (j-1) * N] +
 			                        f[i   + (j+1) * N] -
-			                        4. * f_old[i  + j * N] -
-			                        g(i, j, N)/(N*N)) / 4.;
+			                        4. * f_old[i  + j * N] +
+			                        g(i, j, N)) / 4.;
 		}
 	}
 

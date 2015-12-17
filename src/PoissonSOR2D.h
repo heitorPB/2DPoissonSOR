@@ -57,6 +57,8 @@ static inline double SORParamSin(int N /**< [in] grid size in one dimension */)
 /** @brief SOR Itself. Not to be called by user.
  *
  * This function does one step of SOR. The new solution is stored in f.
+ *
+ * implementation according to @cite berkeley
  */
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N);

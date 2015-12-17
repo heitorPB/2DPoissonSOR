@@ -14,10 +14,13 @@
 
 double g(int x, int y, int N)
 {
-	if ((fabs((double) x - N/2.) < 0.15) && (fabs((double) y - N/2.) < 0.15))
-		return 1.;
+	const double x0 = N/2.;
+	const double y0 = N/2.;
+	const double A = 1.;
+	const double sig_x = (N*N/50.);
+	const double sig_y = (N*N/50.);
 
-	return 0.;
+	return A * exp(- (x - x0) * (x - x0) / sig_x - (y - y0) * (y - y0) / sig_y);
 }
 
 
