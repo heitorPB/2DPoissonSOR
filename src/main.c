@@ -14,9 +14,10 @@
 
 double g(int x, int y, int N)
 {
-	if ((x - N/2. < 0.1) && (y - N/2. < 0.1))
+	if ((fabs((double) x - N/2.) < 0.15) && (fabs((double) y - N/2.) < 0.15))
 		return 1.;
-	return 0;
+
+	return 0.;
 }
 
 

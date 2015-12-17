@@ -49,6 +49,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N)
 {
 	int i, j;
+	double lnorm;
 
 	/* for all black grid points in the interior of the grid */
 	for (j = 1; j < N - 1; j++) { /* y loop */
@@ -76,8 +77,9 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 		}
 	}
 
-	(*norm) = 0;
+	lnorm = 0;
 	for (j = 1; j < N - 1; j++)
 		for (i = 1; i < N - 1; i++)
-			(*norm) = fmax((*norm), fabs(f_old[i + j * N] - f[i + j * N]));
+			lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
+	*norm = lnorm;
 }
