@@ -98,7 +98,11 @@ int writeToFile(const char *fname, int N, double *f, double (*g)(int, int, int))
 		return -1;
 	}
 
+	/* write some header */
+	fprintf(fp, "# N = %d \n", N);
+
 	for (j = 0; j < N; j++) {
+		fprintf(fp, "  ");
 		for (i = 0; i < N; i++)
 			fprintf(fp, "%4.8f\t ", f[i + j * N]);
 		fprintf(fp, "\n");
@@ -114,7 +118,10 @@ int writeToFile(const char *fname, int N, double *f, double (*g)(int, int, int))
 			return -1;
 		}
 
+		fprintf(fp, "# N = %d \n", N);
+
 		for (j = 0; j < N; j++) {
+			fprintf(fp, "  ");
 			for (i = 0; i < N; i++)
 				fprintf(fp, "%4.8f\t ", g(i, j, N));
 			fprintf(fp, "\n");
