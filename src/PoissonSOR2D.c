@@ -17,8 +17,7 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 	int i, t = 0;
 	double norm = prec + 42.;
 
-	/** TODO: check if N % 2 == 0*/
-	/** TODO: get rid of b */
+	/** @todo check if N % 2 == 0*/
 	if (NULL == f)
 		return 1;
 

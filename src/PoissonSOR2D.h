@@ -36,8 +36,8 @@ int PoissonSOR2D(double *f, /**< [in, out] numerical result */
                  double (*g)(int, int, int), /**< [in] RHS of Poisson Eq */
                  double gamma, /**< [in] SOR parameter */
                  int N, /**< [in] number of grid points in each dimension */
-                 int tmax, /** [in] maximum number of iterations */
-                 double prec /** [in] desired precision */);
+                 int tmax, /**< [in] maximum number of iterations */
+                 double prec /**< [in] desired precision */);
 
 
 /** @brief Get optimal parameter for SOR.
@@ -54,8 +54,9 @@ static inline double SORParamSin(int N /**< [in] grid size along one dimension *
 }
 
 
-/* SOR Itself. Not to be called by user.
+/** @brief SOR Itself. Not to be called by user.
  *
+ * This function does one step of SOR. The new solution is stored in f.
  */
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N);
