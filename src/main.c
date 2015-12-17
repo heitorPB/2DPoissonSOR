@@ -82,7 +82,9 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+	writeToFile("before", N, f, NULL);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
+	writeToFile("after", N, f, g);
 
 	printf("%d\n", i);
 

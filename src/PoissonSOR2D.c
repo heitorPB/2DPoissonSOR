@@ -83,3 +83,45 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 			lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 	*norm = lnorm;
 }
+
+
+int writeToFile(const char *fname, int N, double *f, double (*g)(int, int, int))
+{
+	int i, j;
+	FILE *fp = NULL;
+	char filen[256];
+
+	snprintf(filen, sizeof(filen), "%s%s", fname, ".sol");
+
+	if (!(fp = fopen(filen, "w"))) {
+		perror("Unable to write files");
+		return -1;
+	}
+
+	for (j = 0; j < N; j++) {
+		for (i = 0; i < N; i++)
+			fprintf(fp, "%4.8f\t ", f[i + j * N]);
+		fprintf(fp, "\n");
+	}
+
+	fclose(fp);
+
+	if (NULL != g) {
+		snprintf(filen, sizeof(filen), "%s%s", fname, ".g");
+
+		if (!(fp = fopen(filen, "w"))) {
+			perror("Unable to write files");
+			return -1;
+		}
+
+		for (j = 0; j < N; j++) {
+			for (i = 0; i < N; i++)
+				fprintf(fp, "%4.8f\t ", g(i, j, N));
+			fprintf(fp, "\n");
+		}
+
+		fclose(fp);
+	}
+
+	return 0;
+}

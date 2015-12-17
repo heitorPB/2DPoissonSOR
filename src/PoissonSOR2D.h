@@ -48,7 +48,7 @@ int PoissonSOR2D(double *f, /**< [in, out] numerical result */
  *
  * @return SOR optimal parameter
  */
-static inline double SORParamSin(int N /**< [in] grid size along one dimension */)
+static inline double SORParamSin(int N /**< [in] grid size in one dimension */)
 {
 	return (2. / (1. + sin(M_PI / (N + 1.)))) ;
 }
@@ -60,4 +60,21 @@ static inline double SORParamSin(int N /**< [in] grid size along one dimension *
  */
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N);
+
+
+/** @brief Write solution to file.
+ *
+ * Write solution to Poisson Equation to file "fname.sol".
+ * Output is a N x N table with the value of f at each point.
+ *
+ * If g is not NULL, create file "fname.g" with its values in the same
+ * format as before.
+ *
+ * @return
+ * * 0 on success
+ */
+int writeToFile(const char *fname, /**< [in] path to files */
+		int N, /**< [in] grid size in each dimension */
+		double *f, /**< [in] solution array */
+		double (*g)(int, int, int) /**< [in] RHS of Poisson Eq.*/);
 #endif
