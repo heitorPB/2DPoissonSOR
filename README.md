@@ -22,3 +22,6 @@ directory:
 
 This will produce a doc/html folder with documentation. Just open
 doc/html/index.html with your favorite browser.
+
+It needs doxygen for the HTML output and LaTeX with bibtex and ghostscript to
+render the equations.
