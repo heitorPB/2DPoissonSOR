@@ -22,8 +22,10 @@ def plotter(fname):
         ax.plot_surface(X, Y, data, rstride=1, cstride=1, cmap=cm.ocean, linewidth=0, antialiased=True)
 
         ax.set_xlabel(r'$x$')
-        ax.set_ylabel(r'$y')
+        ax.set_ylabel(r'$y$')
         ax.set_zlabel(r'$f(x,y)$')
+
+        ax.set_axis_bgcolor('grey')
 
         plt.show()
 
