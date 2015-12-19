@@ -41,3 +41,6 @@ doc/*.doc*
 
 # binary
 2DSOR
+
+# log files
+*.log

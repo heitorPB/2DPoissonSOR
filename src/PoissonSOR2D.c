@@ -5,10 +5,12 @@
  *
  */
 
+
 #include "PoissonSOR2D.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 
 int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
                  int N, int tmax, double prec)
@@ -45,6 +47,7 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 	return 0;
 }
 
+
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N)
 {
@@ -59,7 +62,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 			                        f_old[i+1 +  j    * N] +
 			                        f_old[i   + (j-1) * N] +
 			                        f_old[i   + (j+1) * N] -
-			                        4. * f_old[i  + j * N] +
+			                        4. * f_old[i  + j * N] -
 			                        g(i, j, N)) / 4.;
 		}
 	}
@@ -72,7 +75,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 			                        f[i+1 +  j    * N] +
 			                        f[i   + (j-1) * N] +
 			                        f[i   + (j+1) * N] -
-			                        4. * f_old[i  + j * N] +
+			                        4. * f_old[i  + j * N] -
 			                        g(i, j, N)) / 4.;
 		}
 	}
