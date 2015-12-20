@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	double serial_time;
 
 	/* this SOR Parameter function is weird */
-	gamma = SORParamSin(N) / 10.;
+	gamma = SORParamSin(N);
 
 	/* Parse command line*/
 	while ((c = getopt(argc, argv, "N:t:p:g:h")) >= 0) {
