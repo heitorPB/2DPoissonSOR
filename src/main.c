@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <time.h>
 
 /** @brief RHS of Poisson Equation.
  *
@@ -35,6 +36,9 @@ int main(int argc, char *argv[])
 	double gamma;
 	double *f = NULL;
 	double *b = NULL;
+
+	struct timespec t0, t1;
+	double serial_time;
 
 	/* this SOR Parameter function is weird */
 	gamma = SORParamSin(N) / 10.;
@@ -93,10 +97,15 @@ int main(int argc, char *argv[])
 		f[i] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
 
 	writeToFile("before_g", N, f, NULL);
+
+	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
+	clock_gettime(CLOCK_REALTIME, &t1);
+
 	writeToFile("after_g", N, f, g);
 
-	printf("%d\n", i);
+	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
+	printf("Serial time: %f s\n", serial_time);
 
 	free(f);
 	return 0;
