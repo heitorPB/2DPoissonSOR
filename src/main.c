@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include "PoissonSOR2D.h"
+#include "PoissonSOR2D_CUDA.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -35,7 +36,6 @@ int main(int argc, char *argv[])
 	double prec = 0.1e-5;
 	double gamma;
 	double *f = NULL;
-	double *b = NULL;
 
 	struct timespec t0, t1;
 	double serial_time;
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	printf("\tprecision: %f\n", prec);
 	printf("\tgamma: %f\n", gamma);
 
-	if (!(f = calloc(N*N, sizeof(double)))) {
+	if (!(f = (double*) calloc(N*N, sizeof(double)))) {
 		perror("Memory allocation problem: ");
 		return 1;
 	}

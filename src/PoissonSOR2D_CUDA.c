@@ -6,26 +6,33 @@
  */
 
 
-#include "PoissonSOR2D.h"
+#include "PoissonSOR2D_CUDA.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 
-int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
+int PoissonSOR2D_CUDA(double *f, double gamma,
                  int N, int tmax, double prec)
 {
 	double *f_tmp;
 	int i, t = 0;
 	double norm = prec + 42.;
 
-	/** @todo check if N % 2 == 0*/
+	dim3 block(16, 16, 1);
+	dim3 grid(ceil(N/16.), ceil(N/16), 1);
+
 	if (NULL == f)
 		return 1;
 
+	/** @todo:
+	 *   - cuda alloc : f, f_temp
+	 *   - cuda copy boundary to f and f_temp
+	 *   - call kernel
+	 *   - kernel for diff
+	 *   - copy memory back
+	 *   - cuda free
+	 */
 	if (!(f_tmp = (double *) calloc(N * N, sizeof(double)))) {
 		perror("Temporary array allocation error:");
 		return -1;
@@ -39,8 +46,8 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 	}
 
 	while ((t < tmax) && (norm > prec)) {
-		update(f_tmp, f, g, NULL, gamma, N);
-		update(f, f_tmp, g, &norm, gamma, N);
+		update_CUDA<<<1,N>>>(f_tmp, f, NULL, gamma, N);
+		update_CUDA<<<1,N>>>(f, f_tmp, &norm, gamma, N);
 		t += 2;
 		if (t % 100 == 0 || norm < prec)
 			printf("t, norm, prec: %4d %.9f %.9f\n", t, norm, prec);
@@ -51,7 +58,8 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 }
 
 
-void update(double *f, double *f_old, double (*g)(int, int, int),
+__global__
+void update_CUDA(double *f, double *f_old,
             double *norm, double gamma, int N)
 {
 	int i, j, k = 0;
@@ -67,7 +75,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f_old[i   + (j-1) * N] +
 				                        f_old[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g_CUDA(i, j, N)) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
 			k = (k + 1) % 2;
@@ -83,7 +91,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f[i   + (j-1) * N] +
 				                        f[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g_CUDA(i, j, N)) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
 			k = (k + 1) % 2;
@@ -99,7 +107,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f_old[i   + (j-1) * N] +
 				                        f_old[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g_CUDA(i, j, N)) / 4.;
 			}
 			k = (k + 1) % 2;
 		}
@@ -114,7 +122,7 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f[i   + (j-1) * N] +
 				                        f[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g_CUDA(i, j, N)) / 4.;
 			}
 			k = (k + 1) % 2;
 		}
@@ -122,50 +130,8 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 }
 
 
-int writeToFile(const char *fname, int N, double *f, double (*g)(int, int, int))
+__device__
+double g_CUDA(int x, int y, int N)
 {
-	int i, j;
-	FILE *fp = NULL;
-	char filen[256];
-
-	snprintf(filen, sizeof(filen), "%s%s", fname, ".sol");
-
-	if (!(fp = fopen(filen, "w"))) {
-		perror("Unable to write files");
-		return -1;
-	}
-
-	/* write some header */
-	fprintf(fp, "# N = %d \n", N);
-
-	for (j = 0; j < N; j++) {
-		fprintf(fp, "  ");
-		for (i = 0; i < N; i++)
-			fprintf(fp, "%4.8f\t ", f[i + j * N]);
-		fprintf(fp, "\n");
-	}
-
-	fclose(fp);
-
-	if (NULL != g) {
-		snprintf(filen, sizeof(filen), "%s%s", fname, ".g");
-
-		if (!(fp = fopen(filen, "w"))) {
-			perror("Unable to write files");
-			return -1;
-		}
-
-		fprintf(fp, "# N = %d \n", N);
-
-		for (j = 0; j < N; j++) {
-			fprintf(fp, "  ");
-			for (i = 0; i < N; i++)
-				fprintf(fp, "%4.8f\t ", g(i, j, N));
-			fprintf(fp, "\n");
-		}
-
-		fclose(fp);
-	}
-
-	return 0;
+	return 0.;
 }
