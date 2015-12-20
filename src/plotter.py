@@ -6,7 +6,7 @@ import numpy as np
 
 import argparse
 
-def plotter(fname):
+def plotter(fname, outname):
         fig = plt.figure()
         ax = fig.gca(projection='3d')
         
@@ -27,11 +27,18 @@ def plotter(fname):
 
         ax.set_axis_bgcolor('grey')
 
-        plt.show()
+        if outname:
+            fig.savefig(outname, dpi=fig.dpi)
+        else:
+            plt.show()
 
 if __name__ == '__main__':
         parser = argparse.ArgumentParser()
-        parser.add_argument("file", help="file to plot")
+        parser.add_argument("inp", help="file to plot")
+        parser.add_argument("--outp", help="file to save plot")
         args = parser.parse_args()
 
-        plotter(args.file)
+        if args.outp:
+            plotter(args.inp, args.outp)
+        else:
+            plotter(args.inp, outname='')
