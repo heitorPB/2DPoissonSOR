@@ -54,13 +54,13 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N)
 {
-	int i, j;
+	int i, j, k = 0;
 	double lnorm = 0;
 
 	if (NULL != norm) {
 		/* for all black grid points in the interior of the grid */
 		for (j = 1; j < N - 1; j++) { /* y loop */
-			for (i = 1; i < N - 1; i += 2) { /* x loop */
+			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f_old[i-1 +  j    * N] +
 				                        f_old[i+1 +  j    * N] +
@@ -70,11 +70,13 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        g(i, j, N)) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
+			k = (k + 1) % 2;
 		}
 
+		k = 1;
 		/* for all red grid points in the interior of the grid */
 		for (j = 1; j < N - 1; j++) { /* y loop */
-			for (i = 2; i < N - 1; i += 2) { /* x loop */
+			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f[i-1 +  j    * N] +
 				                        f[i+1 +  j    * N] +
@@ -84,12 +86,13 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        g(i, j, N)) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
+			k = (k + 1) % 2;
 		}
 		*norm = lnorm;
 	} else {
 		/* for all black grid points in the interior of the grid */
 		for (j = 1; j < N - 1; j++) { /* y loop */
-			for (i = 1; i < N - 1; i += 2) { /* x loop */
+			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f_old[i-1 +  j    * N] +
 				                        f_old[i+1 +  j    * N] +
@@ -98,11 +101,13 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        4. * f_old[i  + j * N] -
 				                        g(i, j, N)) / 4.;
 			}
+			k = (k + 1) % 2;
 		}
 
+		k = 1;
 		/* for all red grid points in the interior of the grid */
 		for (j = 1; j < N - 1; j++) { /* y loop */
-			for (i = 2; i < N - 1; i += 2) { /* x loop */
+			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f[i-1 +  j    * N] +
 				                        f[i+1 +  j    * N] +
@@ -111,15 +116,9 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        4. * f_old[i  + j * N] -
 				                        g(i, j, N)) / 4.;
 			}
+			k = (k + 1) % 2;
 		}
 	}
-
-//	if (NULL != norm) {
-//		for (j = 1; j < N - 1; j++)
-//			for (i = 1; i < N - 1; i++)
-//				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
-//		*norm = lnorm;
-//	}
 }
 
 
