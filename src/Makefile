@@ -7,8 +7,8 @@ endif
 
 ifeq ($(COMP),gnu)
 	CC = gcc
-	CCFLAGS = -O2 -march=native -mtune=native -fopenmp
-	LFLAGS = -lm
+	CCFLAGS = -O3 -march=native -mtune=native 
+	LFLAGS = -lm 
 endif
 
 BIN = 2DSOR
