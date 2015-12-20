@@ -26,44 +26,21 @@ To compile this example, copy this Laplace to src folder with name main.c,
 then compile and run:
 
 	$ cp run/Laplace.c src/main.c
+	$ cd src
 	$ make
 	$ ./2DSOR
 
 Default is to run with grid size 128x128, maximum of 1000 iterations.
-3 files will be created:
+1 file will be created:
 
-- before_l.sol
-- after_l.sol
-- after_l.g
+- solution.sol
 
-This files contain the values of f before the algorithm (with boundary 
-conditions), the numerical solution (file after.sol) and the function
-g(x, y) (after.g).
-They are formated to be used with the Python script src/plotter.py:
+This file contains the numerical solution formated to be used with the Python
+script src/plotter.py:
 
-	$ python3 plotter.py after.sol
+	$ python3 plotter.py solution.sol
 
 The result is:
 
 @image html Laplace.sol.png "Solution to Laplace's Equation" width=\\textwidth
-
-Gaussian
---------
-
-We use a 2D gaussian function to validate the code:
-
-@f[ 
-  \left( \frac{\partial}{\partial x} + \frac{\partial}{\partial y} \right)
-  f(x, y) = 
-  g(x, y) = A e^{\left(- \left(\frac{(x-x_0)^2}{2\sigma_x^2} + \frac{(y-y_0)^2}{2\sigma_y^2} \right)\right)}
-@f]
-
-We set @f$ A = 1 @f$, @f$ 2 \sigma_{x,y} = 1 @f$, @f$ x_0 = y_0 = N / 2 @f$.
-
-We know the solution in this case:
-
-@f[
-  f(x, y) = 4 e^{\left(- ((x-x_0)^2 + (y - y_0)^2) \right)} (x^2 + y^2 - 1)
-@f]
-
 

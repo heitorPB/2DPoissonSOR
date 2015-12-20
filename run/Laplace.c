@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <time.h>
 
 /** @brief RHS of Poisson Equation.
  *
@@ -36,8 +37,11 @@ int main(int argc, char *argv[])
 	double *f = NULL;
 	double *b = NULL;
 
+	struct timespec t0, t1;
+	double serial_time;
+
 	/* this SOR Parameter function is weird */
-	gamma = SORParamSin(N) / 10.;
+	gamma = SORParamSin(N);
 
 	/* Parse command line*/
 	while ((c = getopt(argc, argv, "N:t:p:g:h")) >= 0) {
@@ -87,16 +91,21 @@ int main(int argc, char *argv[])
 	}
 
 	/* set boundary conditions */
-	/* y = 0: f = -x^2 */
+	/* x = 0: f = -y^2 */
 	double x0 = N/2.;
 	for (i = 0; i < N; i++)
-		f[i] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
+		f[i*N] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
 
-	writeToFile("before_g", N, f, NULL);
+	//writeToFile("before_g", N, f, NULL);
+
+	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
-	writeToFile("after_g", N, f, g);
+	clock_gettime(CLOCK_REALTIME, &t1);
 
-	printf("%d\n", i);
+	writeToFile("solution", N, f, NULL);
+
+	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
+	printf("Serial time: %f s\n", serial_time);
 
 	free(f);
 	return 0;
