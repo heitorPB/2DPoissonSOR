@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
 	double serial_time;
 	double gpu_time;
 
+	double *f_gpu = NULL;
+
 	/* this SOR Parameter function is weird */
 	gamma = SORParamSin(N);
 
@@ -90,13 +92,21 @@ int main(int argc, char *argv[])
 		perror("Memory allocation problem: ");
 		return 1;
 	}
+	if (!(f_gpu = (double*) calloc(N*N, sizeof(double)))) {
+		perror("Memory allocation problem: ");
+		free(f);
+		return 1;
+	}
 
 	/* set boundary conditions */
 	/* x = 0: f = -y^2 */
 	double x0 = N/2.;
-	for (i = 0; i < N; i++)
+	for (i = 0; i < N; i++) {
 		f[i*N] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
+		f_gpu[i*N] = f[i*N];
+	}
 
+	/* run in CPU and measure time*/
 
 	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
@@ -106,13 +116,10 @@ int main(int argc, char *argv[])
 
 	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
 
-	/* clean interior of f for GPU SOR */
-	for (i = 1; i < N-1; i++)
-		for (j = 1; j < N-1; j++)
-			f[j + i*N] = 0.;
+	/* now in GPU*/
 
 	clock_gettime(CLOCK_REALTIME, &t0);
-	i = PoissonSOR2D_CUDA(f, gamma, N, tmax, prec);
+	i = PoissonSOR2D_CUDA(f_gpu, gamma, N, tmax, prec);
 	clock_gettime(CLOCK_REALTIME, &t1);
 
 	writeToFile("gpu", N, f, NULL);
@@ -122,5 +129,6 @@ int main(int argc, char *argv[])
 	printf("Serial_time: %f \t GPU_time: %f \n", serial_time, gpu_time);
 
 	free(f);
+	free(f_gpu);
 	return 0;
 }

@@ -31,18 +31,25 @@ int PoissonSOR2D_CUDA(double *f, double gamma,
 	/** @todo kernel for diff */
 
 	size_t size = N * N * sizeof(double);
+
 	CUDA_CHECK(cudaMalloc((void**) &f_gpu, size));
+	CHECK_ERROR_MSG("cudaMalloc");
 	CUDA_CHECK(cudaMalloc((void**) &f_tmp, size));
+	CHECK_ERROR_MSG("cudaMalloc_tmp");
 
 	/* copy boundary conditions */
-	CUDA_CHECK(cudaMemcpy((void*) f_gpu, (void*) f, size, cudaMemcpyHostToDevice));
-	CUDA_CHECK(cudaMemcpy((void*) f_gpu, (void*) f_tmp, size, cudaMemcpyDeviceToDevice));
+	CUDA_CHECK(cudaMemcpy((void*) f_gpu, (void*) f,     size, cudaMemcpyHostToDevice));
+	CUDA_CHECK(cudaMemcpy((void*) f_tmp, (void*) f_gpu, size, cudaMemcpyDeviceToDevice));
 
-	CHECK_ERROR_MSG("Memory");
+	CHECK_ERROR_MSG("cudaMemcpy");
+
+printf("\nsize_t = %ld\n", size);
+	printf("gridsize: %d x %d x %d\n", grid.x, grid.y, grid.z);
+	printf("blocksize: %d x %d x %d\n", block.x, block.y, block.z);
 
 	while ((t < tmax) && (norm > prec)) {
-		update_CUDA<<<grid, block>>>(f_tmp, f, gamma, N);
-		update_CUDA<<<grid, block>>>(f, f_tmp, gamma, N);
+		update_CUDA<<<grid, block>>>(f_tmp, f_gpu, gamma, N);
+		update_CUDA<<<grid, block>>>(f_gpu, f_tmp, gamma, N);
 		t += 2;
 		if (t % 100 == 0 || norm < prec)
 			printf("t, norm, prec: %4d %.9f %.9f\n", t, norm, prec);
@@ -70,15 +77,27 @@ void update_CUDA(double *f, double *f_old,
 
 	/* if not boundary */
 	if ((i > 0) && (j > 0) && (i < N-1) && (j < N-1)) {
+//		printf("(i,j): (%d, %d)"
+//		        "\t(i  ) + (j  )*N): %d"
+//		        "\t(i+1) + (j  )*N): %d"
+//		        "\t(i-1) + (j  )*N): %d"
+//		        "\t(i  ) + (j+1)*N): %d"
+//		        "\t(i  ) + (j-1)*N): %d\n",
+//			i, j,
+//			(i  )+(j  )*N,
+//			(i+1)+(j  )*N,
+//			(i-1)+(j  )*N,
+//			(i  )+(j+1)*N,
+//			(i  )+(j-1)*N );
 		/* for all black points */
-		if ((i + j) % 2 == 1) {
+		if ((i + j) % 2 == 0) {
 			f[i + j * N] = f_old[i + j * N] +
 			               gamma * (f_old[i-1 +  j    * N] +
 			                        f_old[i+1 +  j    * N] +
 			                        f_old[i   + (j-1) * N] +
 			                        f_old[i   + (j+1) * N] -
 			                        4. * f_old[i  + j * N] -
-			                        g_CUDA(i, j, N)) / 4.;
+			                        g_CUDA(i, j, N)/N/N) / 4.;
 		} else {
 			__syncthreads();
 			/* for all red points */
@@ -88,7 +107,7 @@ void update_CUDA(double *f, double *f_old,
 			                        f[i   + (j-1) * N] +
 			                        f[i   + (j+1) * N] -
 			                        4. * f_old[i  + j * N] -
-			                        g_CUDA(i, j, N)) / 4.;
+			                        g_CUDA(i, j, N)/N/N) / 4.;
 		}
 	}
 }
