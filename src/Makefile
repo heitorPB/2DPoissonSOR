@@ -11,7 +11,7 @@ ifeq ($(COMP),gnu)
 	LFLAGS = -lm -lcuda -lcudart
 endif
 
-CUFLAGS = -O3 -Xcompiler=-O3,-march=native,-mtune=native,-Wall,-Wextra -arch=sm_50
+CUFLAGS = -O3 -Xcompiler=-O3,-march=native,-mtune=native,-Wall,-Wextra -arch=sm_50 -lineinfo
 
 BIN = 2DSOR
 OBJ = PoissonSOR2D.o PoissonSOR2D_CUDA.o main.o

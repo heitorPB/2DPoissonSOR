@@ -47,7 +47,7 @@ int PoissonSOR2D_CUDA(double *f, /**< [in, out] numerical result */
  */
 __global__
 void update_CUDA(double *f, double *f_old,
-            double *norm, double gamma, int N);
+                 double gamma, int N);
 
 
 __device__

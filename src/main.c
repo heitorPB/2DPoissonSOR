@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 {
 	char c;
 	double (*func)(int, int, int) = &g;
-	int i;
+	int i, j;
 	int N = 128;
 	int tmax = 4200;
 	double prec = 0.1e-5;
@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 
 	struct timespec t0, t1;
 	double serial_time;
+	double gpu_time;
 
 	/* this SOR Parameter function is weird */
 	gamma = SORParamSin(N);
@@ -91,21 +92,34 @@ int main(int argc, char *argv[])
 	}
 
 	/* set boundary conditions */
-	/* y = 0: f = -x^2 */
+	/* x = 0: f = -y^2 */
 	double x0 = N/2.;
 	for (i = 0; i < N; i++)
-		f[i] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
+		f[i*N] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
 
-	writeToFile("before_g", N, f, NULL);
 
 	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
 	clock_gettime(CLOCK_REALTIME, &t1);
 
-	writeToFile("after_g", N, f, g);
+	writeToFile("cpu", N, f, NULL);
 
 	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
-	printf("Serial time: %f s\n", serial_time);
+
+	/* clean interior of f for GPU SOR */
+	for (i = 1; i < N-1; i++)
+		for (j = 1; j < N-1; j++)
+			f[j + i*N] = 0.;
+
+	clock_gettime(CLOCK_REALTIME, &t0);
+	i = PoissonSOR2D_CUDA(f, gamma, N, tmax, prec);
+	clock_gettime(CLOCK_REALTIME, &t1);
+
+	writeToFile("gpu", N, f, NULL);
+
+	gpu_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
+
+	printf("Serial_time: %f \t GPU_time: %f \n", serial_time, gpu_time);
 
 	free(f);
 	return 0;
