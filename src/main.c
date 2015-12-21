@@ -91,21 +91,19 @@ int main(int argc, char *argv[])
 	}
 
 	/* set boundary conditions */
-	/* y = 0: f = -x^2 */
+	/* x = 0: f = -y^2 */
 	double x0 = N/2.;
 	for (i = 0; i < N; i++)
-		f[i] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
-
-	writeToFile("before_g", N, f, NULL);
+		f[i*N] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
 
 	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
 	clock_gettime(CLOCK_REALTIME, &t1);
 
-	writeToFile("after_g", N, f, g);
+	writeToFile("solution", N, f, NULL);
 
 	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
-	printf("Serial time: %f s\n", serial_time);
+	printf("CPU_time: %f s\n", serial_time);
 
 	free(f);
 	return 0;

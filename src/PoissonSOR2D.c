@@ -21,8 +21,10 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 	double *f_tmp;
 	int i, t = 0;
 	double norm = prec + 42.;
+	#ifdef _OPENMP
+	const int chunk = ceil(N / omp_get_max_threads());
+	#endif
 
-	/** @todo check if N % 2 == 0*/
 	if (NULL == f)
 		return 1;
 
@@ -30,7 +32,9 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 		perror("Temporary array allocation error:");
 		return -1;
 	}
+
 	/* copy boundary conditions */
+	#pragma omp parallel for schedule(static, chunk)
 	for (i = 0; i < N; i++) {
 		f_tmp[i] = f[i]; /* y = 0 */
 		f_tmp[i + (N-1) * N] = f[i + (N-1) * N]; /* y = N - 1 */
@@ -54,12 +58,17 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 void update(double *f, double *f_old, double (*g)(int, int, int),
             double *norm, double gamma, int N)
 {
-	int i, j, k = 0;
+	int i = 1, j, k = 0;
 	double lnorm = 0;
+	#ifdef _OPENMP
+	const int chunk = ceil(N / omp_get_max_threads());
+	#endif
 
 	if (NULL != norm) {
 		/* for all black grid points in the interior of the grid */
+		#pragma omp parallel for reduction(max:lnorm) private(i,j,k) shared(f,f_old) schedule(static,chunk)
 		for (j = 1; j < N - 1; j++) { /* y loop */
+			k = (j+1) % 2;
 			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f_old[i-1 +  j    * N] +
@@ -67,15 +76,15 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f_old[i   + (j-1) * N] +
 				                        f_old[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g(i, j, N)/N/N) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
-			k = (k + 1) % 2;
 		}
 
-		k = 1;
 		/* for all red grid points in the interior of the grid */
+		#pragma omp parallel for reduction(max:lnorm) private(i,j,k) shared(f,f_old) schedule(static,chunk)
 		for (j = 1; j < N - 1; j++) { /* y loop */
+			k = (j) % 2;
 			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f[i-1 +  j    * N] +
@@ -83,15 +92,16 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f[i   + (j-1) * N] +
 				                        f[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g(i, j, N)/N/N) / 4.;
 				lnorm = fmax(lnorm, fabs(f_old[i + j * N] - f[i + j * N]));
 			}
-			k = (k + 1) % 2;
 		}
 		*norm = lnorm;
 	} else {
 		/* for all black grid points in the interior of the grid */
+		#pragma omp parallel for private(i,j,k) shared(f,f_old) schedule(static,chunk)
 		for (j = 1; j < N - 1; j++) { /* y loop */
+			k = (j + 1) % 2;
 			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f_old[i-1 +  j    * N] +
@@ -99,14 +109,14 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f_old[i   + (j-1) * N] +
 				                        f_old[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g(i, j, N)/N/N) / 4.;
 			}
-			k = (k + 1) % 2;
 		}
 
-		k = 1;
 		/* for all red grid points in the interior of the grid */
+		#pragma omp parallel for private(i,j,k) shared(f,f_old) schedule(static,chunk)
 		for (j = 1; j < N - 1; j++) { /* y loop */
+			k = (j) % 2;
 			for (i = 1 + k; i < N - 1; i += 2) { /* x loop */
 				f[i + j * N] = f_old[i + j * N] +
 				               gamma * (f[i-1 +  j    * N] +
@@ -114,9 +124,8 @@ void update(double *f, double *f_old, double (*g)(int, int, int),
 				                        f[i   + (j-1) * N] +
 				                        f[i   + (j+1) * N] -
 				                        4. * f_old[i  + j * N] -
-				                        g(i, j, N)) / 4.;
+				                        g(i, j, N)/N/N) / 4.;
 			}
-			k = (k + 1) % 2;
 		}
 	}
 }
