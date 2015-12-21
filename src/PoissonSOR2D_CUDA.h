@@ -12,6 +12,7 @@
 
 #include <math.h>
 
+
 /** @brief Solver of Poisson Equation.
  *
  * Solves the equation @f$ \frac{\partial^2 f}{\partial x^2} + 
@@ -52,4 +53,5 @@ void update_CUDA(double *f, double *f_old,
 
 __device__
 double g_CUDA(int x, int y, int N);
+
 #endif

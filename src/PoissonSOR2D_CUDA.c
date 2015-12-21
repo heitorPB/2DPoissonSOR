@@ -43,13 +43,13 @@ int PoissonSOR2D_CUDA(double *f, double gamma,
 
 	CHECK_ERROR_MSG("cudaMemcpy");
 
-printf("\nsize_t = %ld\n", size);
 	printf("gridsize: %d x %d x %d\n", grid.x, grid.y, grid.z);
 	printf("blocksize: %d x %d x %d\n", block.x, block.y, block.z);
 
 	while ((t < tmax) && (norm > prec)) {
 		update_CUDA<<<grid, block>>>(f_tmp, f_gpu, gamma, N);
 		update_CUDA<<<grid, block>>>(f_gpu, f_tmp, gamma, N);
+
 		t += 2;
 		if (t % 100 == 0 || norm < prec)
 			printf("t, norm, prec: %4d %.9f %.9f\n", t, norm, prec);
@@ -57,8 +57,7 @@ printf("\nsize_t = %ld\n", size);
 
 	CHECK_ERROR_MSG("Kernel call");
 
-	//CUDA_CHECK(cudaMemcpy((void*) f, (void*) f_gpu, size, cudaMemcpyDeviceToHost));
-	cudaMemcpy((void*) f, (void*) f_gpu, size, cudaMemcpyDeviceToHost);
+	CUDA_CHECK(cudaMemcpy((void*) f, (void*) f_gpu, size, cudaMemcpyDeviceToHost));
 
 	CHECK_ERROR_MSG("Copy memory back");
 
@@ -77,18 +76,6 @@ void update_CUDA(double *f, double *f_old,
 
 	/* if not boundary */
 	if ((i > 0) && (j > 0) && (i < N-1) && (j < N-1)) {
-//		printf("(i,j): (%d, %d)"
-//		        "\t(i  ) + (j  )*N): %d"
-//		        "\t(i+1) + (j  )*N): %d"
-//		        "\t(i-1) + (j  )*N): %d"
-//		        "\t(i  ) + (j+1)*N): %d"
-//		        "\t(i  ) + (j-1)*N): %d\n",
-//			i, j,
-//			(i  )+(j  )*N,
-//			(i+1)+(j  )*N,
-//			(i-1)+(j  )*N,
-//			(i  )+(j+1)*N,
-//			(i  )+(j-1)*N );
 		/* for all black points */
 		if ((i + j) % 2 == 0) {
 			f[i + j * N] = f_old[i + j * N] +
