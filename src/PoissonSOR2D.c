@@ -28,7 +28,7 @@ int PoissonSOR2D(double *f, double (*g)(int, int, int), double gamma,
 	if (NULL == f)
 		return 1;
 
-	if (!(f_tmp = calloc(N * N, sizeof(double)))) {
+	if (!(f_tmp = (double *) calloc(N * N, sizeof(double)))) {
 		perror("Temporary array allocation error:");
 		return -1;
 	}
