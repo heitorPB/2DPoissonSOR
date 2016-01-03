@@ -18,14 +18,22 @@
  *
  * When this function is zero, we recover Laplace's Equation.
  *
- * @return 0
+ * (x,y) position has to be between (0,0) and (N-1,N-1).
+ *
+ * @return value of RHS at point (x,y)
  */
-double g(int x, int y, int N)
+double g(int x, /**< [in] x position */
+	 int y, /**< [in] y position */
+	 int N  /**< [in] size of grid */)
 {
 	return 0.;
 }
 
 
+/** @brief Main function.
+ *
+ * Interface for command line and calling solvers for Poisson Equation.
+ */
 int main(int argc, char *argv[])
 {
 	char c;

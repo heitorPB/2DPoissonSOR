@@ -47,11 +47,22 @@ int PoissonSOR2D_CUDA(double *f, /**< [in, out] numerical result */
  * implementation according to @cite berkeley
  */
 __global__
-void update_CUDA(double *f, double *f_old,
-                 double gamma, int N);
+void update_CUDA(double *f,     /**< [out] new solution */
+                 double *f_old, /**< [in] previous solution */
+                 double gamma,  /**< [in] value of SOR parameter */
+                 int N          /**< [in] grid size */);
 
 
+/** @brief RHS of Poisson Equation.
+ *
+ * When this function is zero, we recover Laplace's Equation.
+ *
+ * (x,y) position has to be between (0,0) and (N-1,N-1).
+ *
+ * @return value of RHS at point (x,y)
+ */
 __device__
-double g_CUDA(int x, int y, int N);
-
+double g_CUDA(int x, /**< [in] x position */
+	      int y, /**< [in] y position */
+	      int N  /**< [in] size of grid */);
 #endif
