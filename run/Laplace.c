@@ -2,12 +2,13 @@
  * @file
  * @author	Heitor Pascoal de Bittencourt <heitor.bittencourt@gmail.com>
  *
- * @brief CLI for solving a 2D Poisson equation with Dirichlet's condition.
+ * @brief CLI for solving a 2D Laplace equation with Dirichlet's condition.
  *
  */
 
 #include <stdio.h>
 #include "PoissonSOR2D.h"
+#include "PoissonSOR2D_CUDA.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -17,14 +18,21 @@
  *
  * When this function is zero, we recover Laplace's Equation.
  *
- * @return 0
+ * @return 0 
  */
-double g(int x, int y, int N)
+double g(int x, /**< [in] x position */
+	 int y, /**< [in] y position */
+	 int N  /**< [in] size of grid */)
 {
 	return 0.;
 }
 
 
+/** @brief Main function.
+ *
+ * Interface for command line and calling solvers for Laplace Equation
+ * in CPU (with OpenMP) and GPU (with CUDA).
+ */
 int main(int argc, char *argv[])
 {
 	char c;
@@ -35,10 +43,12 @@ int main(int argc, char *argv[])
 	double prec = 0.1e-5;
 	double gamma;
 	double *f = NULL;
-	double *b = NULL;
 
 	struct timespec t0, t1;
 	double serial_time;
+	double gpu_time;
+
+	double *f_gpu = NULL;
 
 	/* this SOR Parameter function is weird */
 	gamma = SORParamSin(N);
@@ -85,28 +95,47 @@ int main(int argc, char *argv[])
 	printf("\tprecision: %f\n", prec);
 	printf("\tgamma: %f\n", gamma);
 
-	if (!(f = calloc(N*N, sizeof(double)))) {
+	if (!(f = (double*) calloc(N*N, sizeof(double)))) {
 		perror("Memory allocation problem: ");
+		return 1;
+	}
+	if (!(f_gpu = (double*) calloc(N*N, sizeof(double)))) {
+		perror("Memory allocation problem: ");
+		free(f);
 		return 1;
 	}
 
 	/* set boundary conditions */
 	/* x = 0: f = -y^2 */
 	double x0 = N/2.;
-	for (i = 0; i < N; i++)
+	for (i = 0; i < N; i++) {
 		f[i*N] = -(i - x0)*(i - x0) / (x0)/(x0) + 1.;
+		f_gpu[i*N] = f[i*N];
+	}
 
-	//writeToFile("before_g", N, f, NULL);
+	/* run in CPU and measure time*/
 
 	clock_gettime(CLOCK_REALTIME, &t0);
 	i = PoissonSOR2D(f, func, gamma, N, tmax, prec);
 	clock_gettime(CLOCK_REALTIME, &t1);
 
-	writeToFile("solution", N, f, NULL);
+	writeToFile("cpu", N, f, NULL);
 
 	serial_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
-	printf("Serial time: %f s\n", serial_time);
+
+	/* now in GPU*/
+
+	clock_gettime(CLOCK_REALTIME, &t0);
+	i = PoissonSOR2D_CUDA(f_gpu, gamma, N, tmax, prec);
+	clock_gettime(CLOCK_REALTIME, &t1);
+
+	writeToFile("gpu", N, f, NULL);
+
+	gpu_time = (t1.tv_sec - t0.tv_sec) + (t1.tv_nsec - t0.tv_nsec) / 1.E9;
+
+	printf("CPU_time: %f \t GPU_time: %f \n", serial_time, gpu_time);
 
 	free(f);
+	free(f_gpu);
 	return 0;
 }
