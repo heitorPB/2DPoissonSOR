@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 				"\t-N\tgrid size in each dimension\n"
 				"\t-t\tmax number of iterations\n"
 				"\t-p\tdesired precision\n"
-				"\t-g\tdesired precision\n"
+				"\t-g\tdesired SOR parameter\n"
 				"\t-h\tthis text\n",
 				argv[0]);
 			return 0;
