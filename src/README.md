@@ -42,7 +42,7 @@ To compile the code without OpenMP support:
 	$ cd src/
 	$ make -j3
 
-To enable OpenMP support, src/ directory myst be clean:
+To enable OpenMP support, src/ directory must be clean:
 
 	$ cd src/
 	$ make clean

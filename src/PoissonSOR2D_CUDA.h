@@ -74,7 +74,9 @@ double g_CUDA(int x, /**< [in] x position */
 	      int y, /**< [in] y position */
 	      int N  /**< [in] size of grid */);
 
-
+/** @brief magic code
+ *
+ */
 template<typename T>
 class diff_thr : public thrust::unary_function<thrust::tuple<T, T>, T>
 {
@@ -86,6 +88,16 @@ public:
 };
 
 
+/** @brief CUDA kernel to check for convergence
+ *
+ * @bug
+ * For some reason that I don't know, this code is not very stable. Running
+ * several times with the same initial conditions, the number of steps changes.
+ * And the GPU code needs almost twice the number of iterations. It might be
+ * related to this [Differences from x86]
+ * (docs.nvidia.com/cuda/floating-point/index.html#differences-from-x86)
+ *
+ */
 template<typename T>
 T diffGPU(T *A_d, T *B_d, int N)
 {

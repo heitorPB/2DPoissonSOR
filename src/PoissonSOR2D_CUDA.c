@@ -28,8 +28,6 @@ int PoissonSOR2D_CUDA(double *f, double gamma,
 	if (NULL == f)
 		return 1;
 
-	/** @todo kernel for diff */
-
 	size_t size = N * N * sizeof(double);
 
 	CUDA_CHECK(cudaMalloc((void**) &f_gpu, size));
