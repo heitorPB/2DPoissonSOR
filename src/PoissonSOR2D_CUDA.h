@@ -11,6 +11,14 @@
 #define POISSONSOR2D_CUDA_H_INCLUDED
 
 #include <math.h>
+#include <thrust/device_vector.h>
+#include <thrust/functional.h>
+#include <thrust/iterator/zip_iterator.h>
+#if CUDA_VERSION >= 6050
+#include <thrust/transform_reduce.h>
+#else
+#include <thrust/transform.h>
+#endif
 
 
 /** @brief Solver of Poisson Equation.
@@ -65,4 +73,41 @@ __device__
 double g_CUDA(int x, /**< [in] x position */
 	      int y, /**< [in] y position */
 	      int N  /**< [in] size of grid */);
+
+
+template<typename T>
+class diff_thr : public thrust::unary_function<thrust::tuple<T, T>, T>
+{
+public:
+	__host__ __device__
+	T operator()(const thrust::tuple<T, T>& x) const {
+		return (fabs(thrust::get<1>(x) - thrust::get<0>(x)));
+	}
+};
+
+
+template<typename T>
+T diffGPU(T *A_d, T *B_d, int N)
+{
+	typedef thrust::device_ptr<T> FloatIterator;
+	typedef thrust::tuple<FloatIterator, FloatIterator> IteratorTuple;
+	typedef thrust::zip_iterator<IteratorTuple> ZipIterator;
+
+	thrust::device_ptr<T> A_ptr(A_d);
+	thrust::device_ptr<T> B_ptr(B_d);
+
+	ZipIterator first =
+		thrust::make_zip_iterator(thrust::make_tuple(A_ptr, B_ptr));
+	ZipIterator last =
+		thrust::make_zip_iterator(thrust::make_tuple(A_ptr + N*N, B_ptr + N*N));
+
+	T diff = thrust::transform_reduce(first, last, diff_thr<T>(), static_cast<T>(0), thrust::maximum<T>());
+
+	return (diff);
+}
+
+
+
+
+
 #endif

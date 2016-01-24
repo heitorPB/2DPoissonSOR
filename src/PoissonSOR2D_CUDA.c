@@ -50,6 +50,8 @@ int PoissonSOR2D_CUDA(double *f, double gamma,
 		update_CUDA<<<grid, block>>>(f_tmp, f_gpu, gamma, N);
 		update_CUDA<<<grid, block>>>(f_gpu, f_tmp, gamma, N);
 
+		norm = diffGPU<double>(f_gpu, f_tmp, N);
+
 		t += 2;
 		if (t % 100 == 0 || norm < prec)
 			printf("t, norm, prec: %4d %.9f %.9f\n", t, norm, prec);
